@@ -1,138 +1,60 @@
-use ablate::{Ablate, AblateIter};
+use ablate::{Ablate, IntoAblate};
 
-// #[derive(Ablate)]
-#[derive(Debug, PartialEq)]
+#[derive(Ablate, Debug, PartialEq)]
+enum T {
+    A,
+    B,
+    C,
+}
+
+#[derive(Ablate, Debug, PartialEq)]
 struct Thing {
-    field_a: A,
-    field_b: Bool,
+    field_a: T,
+    field_b: bool,
+    field_c: Hi,
 }
 
 #[derive(Debug, PartialEq)]
-enum A {
-    Aa,
-    Bb,
-    Cc,
+struct Hi {
+    a: bool,
+    b: bool,
 }
 
-#[derive(Debug, PartialEq)]
-enum Bool {
-    True,
-    False,
-}
+impl Ablate for Hi {
+    fn nth(n: usize) -> Self {
+        let [ia, ib] = ablate::digits([bool::size(), bool::size()], n);
+        let a = bool::nth(ia);
+        let b = bool::nth(ib);
+        Hi { a, b }
+    }
 
-struct AIter(usize);
-
-impl Default for AIter {
-    fn default() -> Self {
-        AIter(0)
+    fn size() -> usize {
+        bool::size() * bool::size()
     }
 }
 
-impl Iterator for AIter {
-    type Item = A;
+// impl Ablate for Thing {
+//     fn nth(n: usize) -> Self {
+//         let [ia, ib, ic] = ablate::digits([T::size(), bool::size(), Hi::size()], n);
+//         let a = T::nth(ia);
+//         let b = bool::nth(ib);
+//         let c = Hi::nth(ic);
+//         Thing {
+//             field_a: a,
+//             field_b: b,
+//             field_c: c,
+//         }
+//     }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        let ret = match self.0 {
-            0 => Some(A::Aa),
-            1 => Some(A::Bb),
-            2 => Some(A::Cc),
-            _ => None,
-        };
-        self.0 += 1;
-        ret
-    }
-}
-
-struct BoolIter(usize);
-
-impl Default for BoolIter {
-    fn default() -> Self {
-        BoolIter(0)
-    }
-}
-
-impl Iterator for BoolIter {
-    type Item = Bool;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let ret = match self.0 {
-            0 => Some(Bool::True),
-            1 => Some(Bool::False),
-            _ => None,
-        };
-        self.0 += 1;
-        ret
-    }
-}
-
-impl ablate::AblateIter for A {
-    type Iterator = AIter;
-
-    fn iter() -> Self::Iterator {
-        AIter(0)
-    }
-}
-
-#[derive(Default)]
-struct ThingIter<AI: Iterator<Item = A> + Default, BI: Iterator<Item = Bool> + Default> {
-    field_a_iter: AI,
-    cache_a: Option<A>,
-    field_b_iter: BI,
-    cache_b: Option<Bool>,
-}
-
-impl<AI, BI> Iterator for ThingIter<AI, BI>
-where
-    AI: Iterator<Item = A> + Default,
-    BI: Iterator<Item = Bool> + Default,
-{
-    type Item = Thing;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        todo!()
-    }
-}
-
-impl ablate::AblateIter for Thing {
-    type Iterator = ThingIter<AIter, BoolIter>;
-
-    fn iter() -> Self::Iterator {
-        ThingIter {
-            field_a_iter: AIter::default(),
-            field_b_iter: BoolIter::default(),
-        }
-    }
-}
+//     fn size() -> usize {
+//         T::size() * bool::size() * Hi::size()
+//     }
+// }
 
 #[test]
-fn it_does_thing() {
-    let gold = [
-        Thing {
-            field_a: A::Aa,
-            field_b: Bool::True,
-        },
-        Thing {
-            field_a: A::Bb,
-            field_b: Bool::True,
-        },
-        Thing {
-            field_a: A::Cc,
-            field_b: Bool::True,
-        },
-        Thing {
-            field_a: A::Aa,
-            field_b: Bool::False,
-        },
-        Thing {
-            field_a: A::Bb,
-            field_b: Bool::False,
-        },
-        Thing {
-            field_a: A::Cc,
-            field_b: Bool::False,
-        },
-    ];
-    for (i, v) in Thing::iter().enumerate() {
-        assert_eq!(v, gold[i]);
+fn play() {
+    for i in Thing::ablate() {
+        eprintln!("{i:?}");
     }
+    assert!(false)
 }

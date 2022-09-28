@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 ablate_derive = { path = "ablate_derive", version = "0.1.0" }
+itertools = "0.10.5"
 
 [workspace]
