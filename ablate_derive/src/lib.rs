@@ -21,30 +21,28 @@ fn impl_ablate(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-#[rustfmt::skip]
 fn impl_enum(name: &proc_macro2::Ident, ast: &syn::DataEnum) -> proc_macro2::TokenStream {
-    for variant in ast.variants.iter() {
-	eprintln!("{:?}", variant.ident);
-	eprintln!("{:?}", variant.fields.len());
-    }
+    let arms: Vec<_> = ast
+        .variants
+        .iter()
+        .enumerate()
+        .map(|(i, var)| {
+            let var_name = &var.ident;
 
-    let arms: Vec<_> = ast.variants.iter().enumerate().map(|(i, var)| {
-	let var_name = &var.ident;
-
-	if var.fields.len() == 0 {
-	    
-	quote::quote! {
-	    #i => #name::#var_name,
-	}
-	} else {
-	    todo!("Don't support this case yet")
-	}
-
-    }).collect();
+            if var.fields.len() == 0 {
+                quote::quote! {
+                    #i => #name::#var_name,
+                }
+            } else {
+                todo!("Don't support this case yet")
+            }
+        })
+        .collect();
 
     // first order approximation
     let size = ast.variants.len();
 
+    #[rustfmt::skip]
     quote::quote! {
 	impl ::ablate::Ablate for #name {
             fn nth(n: usize) -> Self {
@@ -63,11 +61,6 @@ fn impl_enum(name: &proc_macro2::Ident, ast: &syn::DataEnum) -> proc_macro2::Tok
 
 fn impl_struct(name: &proc_macro2::Ident, ast: &syn::DataStruct) -> proc_macro2::TokenStream {
     let types: Vec<_> = ast.fields.iter().map(|field| &field.ty).collect();
-
-    for field in ast.fields.iter() {
-        let ty = &field.ty;
-        eprintln!("{:?}: {}", field.ident, quote::quote!(#ty));
-    }
 
     let index_id = quote::format_ident!("__indices");
 
